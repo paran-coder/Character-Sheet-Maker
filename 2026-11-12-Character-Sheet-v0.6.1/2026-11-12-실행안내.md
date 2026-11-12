@@ -13,7 +13,7 @@ H3 v1.3 프리셋 정의와 가이드 계산을 적용했다. 카드와 가이�
 UI 점검 기준은 Damir Sokolovsky (@heydamir)의 Unslop (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/)을 적용했다. https://heydamir.design/unslop
 
 
-저장은 원본 PNG 크기를 유지한다. 업스케일 저장은 브라우저의 ESRGAN Slim으로 가로·세로를 각각 4배 확대한다. 두 버튼 모두 같은 생성 결과를 사용한다.
+저장 버튼은 생성 결과를 원본 크기의 PNG로 저장한다.
 
 
 기본 프리셋인 표준 3뷰는 정면2·전신 후면·얼굴 정면 순서다. 기존 전체 13뷰 프리셋은 기존 뷰 조합을 유지한다.

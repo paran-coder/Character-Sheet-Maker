@@ -9,7 +9,6 @@ const assets = [
   '2026-11-12-app.mjs',
   '2026-11-12-style.css',
   '2026-11-12-views.mjs',
-  '2026-11-12-upscale.mjs',
   '2026-11-12-clothing_back.png',
   '2026-11-12-clothing_front.png',
   '2026-11-12-face_3q_left.png',
@@ -17,12 +16,8 @@ const assets = [
   '2026-11-12-face_back.png',
   '2026-11-12-face_right.png',
   '2026-11-12-mannequin-atlas.png',
-  '2026-11-12-upscale-model/model.json',
-  '2026-11-12-upscale-model/group1-shard1of1.bin',
-  '2026-11-12-upscale-model/LICENSE',
 ];
 
-await mkdir(new URL('./2026-11-12-upscale-model/', output), { recursive: true });
 await Promise.all(assets.map(asset => copyFile(new URL(asset, app), new URL(asset, output))));
 const installer = '2026-11-12-AIConnector-Setup-v1.15.1.exe';
 await copyFile(new URL('./2026-11-12-GitHub-Release-v1.15.1/' + installer, import.meta.url), new URL(installer, output));

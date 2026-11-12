@@ -10,7 +10,6 @@ const connectionStatus = get('connection-status');
 const download = get('download');
 let sourceUrl;
 let resultUrl;
-const upscaleButton = get('download-original');
 let connected = false;
 let working = false;
 
@@ -248,7 +247,6 @@ form.addEventListener('submit', async event => {
     get('result-open').hidden = false;
     get('empty').hidden = true;
 
-    upscaleButton.hidden = false;
     download.hidden = false;
     status.textContent = '시트가 완성되었습니다.';
   } catch (error) {
@@ -387,24 +385,6 @@ function savePng(url, filename) {
 download.addEventListener('click', () => {
   if (resultUrl) savePng(resultUrl, 'character-sheet.png');
 });
-upscaleButton.addEventListener('click', async () => {
-  if (!resultUrl || upscaleButton.disabled) return;
-  upscaleButton.disabled = true;
-  status.textContent = '로컬에서 이미지를 업스케일하고 있습니다…';
-  try {
-    const { upscaleImage } = await import('./2026-11-12-upscale.mjs');
-    const url = URL.createObjectURL(await upscaleImage(resultUrl));
-    savePng(url, 'character-sheet-upscaled.png');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
-    status.textContent = '업스케일 PNG를 저장했습니다.';
-  } catch (error) {
-    status.textContent = error.message;
-  } finally {
-    upscaleButton.disabled = false;
-  }
-});
-
-
 const resultDialog = get('result-dialog');
 get('result-open').addEventListener('click', () => {
   if (!resultUrl || resultDialog.open) return;
