@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node 2026-11-12-build-vercel.mjs",
+  "outputDirectory": "public"
+}
