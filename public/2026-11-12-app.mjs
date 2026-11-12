@@ -6,6 +6,7 @@ const reference = get('reference');
 const generate = get('generate');
 const login = get('login');
 const status = get('status');
+const connectionStatus = get('connection-status');
 const download = get('download');
 let sourceUrl;
 let resultUrl;
@@ -86,16 +87,17 @@ async function refresh() {
   const state = await request('/status');
   connected = state.connected;
   update();
-  if (!state.installed) status.textContent = 'Codex CLI를 시작할 수 없습니다. 실행 환경을 확인하세요.';
+  if (!state.installed) connectionStatus.textContent = 'Codex CLI를 시작할 수 없습니다. 실행 환경을 확인하세요.';
   return state;
 }
 
 login.addEventListener('click', async () => {
   login.disabled = true;
+  connectionStatus.textContent = '공통 AI연결앱을 확인하고 있습니다…';
   try {
     await pairIfNeeded();
     const state = await refresh();
-    if (state.connected) { status.textContent = ''; return; }
+    if (state.connected) { connectionStatus.textContent = ''; return; }
     login.disabled = true;
     const result = await request('/login');
     if (result.authUrl) {
@@ -106,7 +108,7 @@ login.addEventListener('click', async () => {
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.textContent = 'ChatGPT 로그인 열기';
-      status.replaceChildren(link);
+      connectionStatus.replaceChildren(link);
       await new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('로그인 링크가 만료되었습니다.')), 120000);
         link.addEventListener('click', () => {
@@ -114,19 +116,19 @@ login.addEventListener('click', async () => {
           setTimeout(resolve, 0);
         }, {once:true});
       });
-      status.textContent = '새 탭에서 ChatGPT에 로그인한 뒤 돌아오세요.';
+      connectionStatus.textContent = '새 탭에서 ChatGPT에 로그인한 뒤 돌아오세요.';
       for (let attempt = 0; attempt < 150 && !connected; attempt++) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         await refresh();
         if (!connected) login.disabled = true;
       }
-      status.textContent = connected ? '' : '로그인 연결 시간이 지났습니다. 다시 시도하세요.';
+      connectionStatus.textContent = connected ? '' : '로그인 연결 시간이 지났습니다. 다시 시도하세요.';
       if (connected) renderGuide();
     } else {
       await refresh();
     }
   } catch (error) {
-    status.textContent = error.message;
+    connectionStatus.textContent = error.message;
   } finally {
     update();
   }
@@ -205,7 +207,7 @@ form.addEventListener('submit', async event => {
   }
 });
 
-if (!publicSite) refresh().catch(error => { status.textContent = error.message; });
+if (!publicSite) refresh().catch(error => { connectionStatus.textContent = error.message; });
 
 
 
