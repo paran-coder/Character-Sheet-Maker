@@ -48,11 +48,12 @@
   </form>
   <section aria-labelledby="result-title">
     <h2 id="result-title">생성 결과</h2>
-    <div class="generate-action"><button form="sheet" type="submit" id="generate" disabled>시트 생성</button><p id="status" role="status"></p></div><div class="preview"><p id="empty">시트를 생성하면 미리볼 수 있습니다</p><img id="result" alt="생성된 캐릭터 시트" hidden></div>
+    <div class="generate-action"><button form="sheet" type="submit" id="generate" disabled>시트 생성</button><p id="status" role="status"></p></div><div class="preview"><p id="empty">시트를 생성하면 미리볼 수 있습니다</p><button type="button" id="result-open" aria-label="생성된 캐릭터 시트 크게 보기" hidden><img id="result" alt="생성된 캐릭터 시트"></button></div>
     <button type="button" id="download" hidden>저장</button>
       <button type="button" id="download-original" hidden>업스케일 저장</button>
   </section>
 </main>
+<dialog id="result-dialog" aria-label="캐릭터 시트 크게 보기"><form method="dialog"><button autofocus>닫기</button></form><img id="result-large" alt="확대된 캐릭터 시트"></dialog>
 <script type="module" src="/2026-11-12-app.mjs"></script>
 </html>
 

@@ -30,6 +30,10 @@ await copyFile(new URL('2026-11-12-connector-detection.mjs', import.meta.url), n
 const html = await readFile(new URL('2026-11-12-index.html', app), 'utf8');
 await writeFile(new URL('index.html', output), html
   .replace('<meta property="og:type"', '<meta property="og:url" content="' + site + '/">\n<meta property="og:type"')
-  .replace('<div class="connection">', '<div class="connection"><a id="connector-download" class="connector-download" href="/' + installer + '" download>AI연결앱 설치·업데이트</a> ')
+  .replace('<div class="connection">', '<div class="connection"><a href="/guide/">사용설명서</a> <a id="connector-download" class="connector-download" href="/' + installer + '" download>AI연결앱 설치·업데이트</a> ')
   .replace('</html>', '<script type="module" src="/2026-11-12-connector-detection.mjs"></script></html>')
   .replaceAll('content="/og-image.png"', 'content="' + site + '/og-image.png"'));
+
+const guide = await readFile(new URL('2026-11-12-user-guide.html', import.meta.url), 'utf8');
+await mkdir(new URL('./guide/', output), { recursive: true });
+await writeFile(new URL('./guide/index.html', output), guide.replace('__INSTALLER__', installer));

@@ -221,7 +221,7 @@ form.addEventListener('submit', async event => {
     if (resultUrl) URL.revokeObjectURL(resultUrl);
     resultUrl = url;
     get('result').src = url;
-    get('result').hidden = false;
+    get('result-open').hidden = false;
     get('empty').hidden = true;
 
     upscaleButton.hidden = false;
@@ -364,5 +364,20 @@ upscaleButton.addEventListener('click', async () => {
     status.textContent = error.message;
   } finally {
     upscaleButton.disabled = false;
+  }
+});
+
+
+const resultDialog = get('result-dialog');
+get('result-open').addEventListener('click', () => {
+  if (!resultUrl || resultDialog.open) return;
+  get('result-large').src = resultUrl;
+  resultDialog.showModal();
+});
+resultDialog.addEventListener('click', event => {
+  if (event.target === resultDialog) {
+    const bounds = resultDialog.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right ||
+        event.clientY < bounds.top || event.clientY > bounds.bottom) resultDialog.close();
   }
 });

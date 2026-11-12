@@ -159,3 +159,15 @@ input[type=file] { padding:12px; margin:8px 0; }
 .connection { text-align:right; }
 #connection-status { margin:8px 0 0; font-size:.875rem; color:var(--muted); max-width:24rem; }
 #connection-status:empty { display:none; }
+
+#result-open { padding:0; border:0; background:transparent; cursor:zoom-in; width:100%; }
+#result-dialog { max-width:96vw; max-height:94vh; padding:12px; border:0; border-radius:12px; }
+#result-dialog::backdrop { background:rgba(18,20,24,.82); }
+#result-dialog form { padding:0; border:0; margin:0 0 8px; text-align:right; }
+#result-large { display:block; max-width:90vw; max-height:82vh; width:auto; height:auto; object-fit:contain; margin:auto; }
+
+.guide-page .guide-content { display:block; max-width:760px; }
+.guide-content article { background:var(--canvas); border:1px solid var(--border); border-radius:12px; padding:clamp(16px,4vw,32px); }
+.guide-content li { margin-block:20px; }
+.guide-content h3 { margin-bottom:4px; }
+.guide-content p { margin-top:0; }
