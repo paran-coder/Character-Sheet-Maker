@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@tensorflow/tfjs": "4.11.0",
+    "@upscalerjs/esrgan-slim": "1.0.0",
+    "esbuild": "0.25.12",
+    "upscaler": "1.0.0"
+  }
+}
