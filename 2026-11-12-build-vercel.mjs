@@ -26,8 +26,10 @@ await mkdir(new URL('./2026-11-12-upscale-model/', output), { recursive: true })
 await Promise.all(assets.map(asset => copyFile(new URL(asset, app), new URL(asset, output))));
 const installer = '2026-11-12-AIConnector-Setup-v1.15.0.exe';
 await copyFile(new URL('./2026-11-12-GitHub-Release-v1.15.0/' + installer, import.meta.url), new URL(installer, output));
+await copyFile(new URL('2026-11-12-connector-detection.mjs', import.meta.url), new URL('2026-11-12-connector-detection.mjs', output));
 const html = await readFile(new URL('2026-11-12-index.html', app), 'utf8');
 await writeFile(new URL('index.html', output), html
   .replace('<meta property="og:type"', '<meta property="og:url" content="' + site + '/">\n<meta property="og:type"')
-  .replace('<div class="connection">', '<div class="connection"><a class="connector-download" href="/' + installer + '" download>AI연결앱 설치·업데이트</a> ')
+  .replace('<div class="connection">', '<div class="connection"><a id="connector-download" class="connector-download" href="/' + installer + '" download>AI연결앱 설치·업데이트</a> ')
+  .replace('</html>', '<script type="module" src="/2026-11-12-connector-detection.mjs"></script></html>')
   .replaceAll('content="/og-image.png"', 'content="' + site + '/og-image.png"'));
