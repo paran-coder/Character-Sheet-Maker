@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { CodexProvider } from './2026-11-12-codex-provider.mjs';
 import { viewIds } from './2026-11-12-views.mjs';
 
-const bridge = new CodexProvider(fileURLToPath(new URL('./2026-11-12-runtime/', import.meta.url)));
+const bridge = new CodexProvider(process.env.CHARACTER_SHEET_CONNECTOR_DATA || fileURLToPath(new URL('./2026-11-12-runtime/', import.meta.url)));
 const files = new Map([
   ['/', ['2026-11-12-index.html', 'text/html']],
   ['/2026-11-12-style.css', ['2026-11-12-style.css', 'text/css']],
@@ -115,11 +115,26 @@ async function readBody(req, maxBytes = 12 * 1024 * 1024) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
+const publicOrigin = 'https://charactersheetmaker.vercel.app';
+const bridgeRoutes = new Set(['/status', '/layout', '/login', '/generate']);
+
 const server = createServer(async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; connect-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'none'");
   if (req.headers.host !== host) return json(res, 403, { error: '로컬 앱 주소로 접속하세요.' });
+  const requestOrigin = req.headers.origin;
+  if (requestOrigin === publicOrigin && bridgeRoutes.has(req.url)) {
+    res.setHeader('Access-Control-Allow-Origin', publicOrigin);
+    res.setHeader('Vary', 'Origin');
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Methods', 'POST');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      if (req.headers['access-control-request-private-network'] === 'true')
+        res.setHeader('Access-Control-Allow-Private-Network', 'true');
+      return res.writeHead(204).end();
+    }
+  }
   try {
     const file = files.get(req.url);
     if (req.method === 'GET' && file) {
@@ -130,7 +145,7 @@ const server = createServer(async (req, res) => {
     if (req.method !== 'POST' || !['/status', '/login', '/generate', '/layout'].includes(req.url)) {
       return json(res, 404, { error: '페이지를 찾을 수 없습니다.' });
     }
-    if (req.headers.origin !== origin || req.headers['content-type'] !== 'application/json') {
+    if ((requestOrigin !== origin && requestOrigin !== publicOrigin) || req.headers['content-type'] !== 'application/json') {
       return json(res, 403, { error: '앱 화면에서 요청하세요.' });
     }
     const body = await readBody(req);
@@ -140,7 +155,7 @@ const server = createServer(async (req, res) => {
     }
     if (req.url === '/status') {
       const status = await bridge.status();
-      return json(res, 200, { installed: status.installed, connected: Boolean(status.account) });
+      return json(res, 200, { installed: status.installed, connected: Boolean(status.account), connectorVersion: process.env.CHARACTER_SHEET_CONNECTOR_VERSION || null });
     }
     if (busy) return json(res, 409, { error: '현재 작업이 끝난 뒤 다시 시도하세요.' });
     busy = true;

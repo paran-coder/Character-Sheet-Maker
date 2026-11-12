@@ -44,7 +44,7 @@ export async function decodeImageItem(item, home) {
 }
 
 export function launchCommand(env,args) {
-  return env.NODECANVAS_CODEX_JS ? {command:process.execPath,args:[env.NODECANVAS_CODEX_JS,...args]} : {command:env.NODECANVAS_CODEX||'codex',args};
+  return env.CHARACTER_SHEET_CODEX_JS ? {command:process.execPath,args:[env.CHARACTER_SHEET_CODEX_JS,...args]} : {command:env.CHARACTER_SHEET_CODEX||'codex',args};
 }
 export class CodexProvider extends EventEmitter {
   constructor(home,{spawnProcess=spawn}={}) {super();this.home=path.resolve(home);this.storage='ephemeral';this.preferenceLoaded=false;this.spawnProcess=spawnProcess;this.pending=new Map();this.sequence=0;this.active=new Set();this.setMaxListeners(24);this.ready=null;this.process=null;this.lastError='';this.loginId=null;this.generation=0;this.disposed=false;this.attempt=null;this.closing=null;this.ownedJobs=new Set();}

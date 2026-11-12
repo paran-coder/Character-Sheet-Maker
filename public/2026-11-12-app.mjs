@@ -42,10 +42,14 @@ function update() {
   login.disabled = connected;
 }
 
+const publicSite = location.origin === 'https://charactersheetmaker.vercel.app';
+const bridgeHelp = 'PC에서 AI연결앱을 설치하고 실행하세요. 브라우저가 로컬 네트워크 접근을 요청하면 허용해 주세요.';
 async function request(path, body = {}) {
-  const response = await fetch(path, {
+  const response = await fetch((publicSite ? 'http://127.0.0.1:43186' : '') + path, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-  });
+    signal: AbortSignal.timeout(path === '/generate' ? 300000 : 20000),
+  }).catch(() => { throw new Error(bridgeHelp); });
+  if (!response.headers.get('content-type')?.includes('application/json')) throw new Error(bridgeHelp);
   const result = await response.json();
   if (!response.ok) throw new Error(result.error);
   return result;
@@ -60,16 +64,25 @@ async function refresh() {
 }
 
 login.addEventListener('click', async () => {
-  const auth = window.open('about:blank', '_blank');
-  if (auth) auth.opener = null;
   login.disabled = true;
   try {
     const result = await request('/login');
     if (result.authUrl) {
-      if (!auth) throw new Error('브라우저 팝업을 허용한 뒤 다시 시도하세요.');
       const url = new URL(result.authUrl);
       if (url.protocol !== 'https:') throw new Error('로그인 주소를 확인할 수 없습니다.');
-      auth.location.replace(url.href);
+      const link = document.createElement('a');
+      link.href = url.href;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'ChatGPT 로그인 열기';
+      status.replaceChildren(link);
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('로그인 링크가 만료되었습니다.')), 120000);
+        link.addEventListener('click', () => {
+          clearTimeout(timer);
+          setTimeout(resolve, 0);
+        }, {once:true});
+      });
       status.textContent = '새 탭에서 ChatGPT에 로그인한 뒤 돌아오세요.';
       for (let attempt = 0; attempt < 150 && !connected; attempt++) {
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -77,12 +90,11 @@ login.addEventListener('click', async () => {
         if (!connected) login.disabled = true;
       }
       status.textContent = connected ? '' : '로그인 연결 시간이 지났습니다. 다시 시도하세요.';
+      if (connected) renderGuide();
     } else {
-      auth?.close();
       await refresh();
     }
   } catch (error) {
-    auth?.close();
     status.textContent = error.message;
   } finally {
     update();
