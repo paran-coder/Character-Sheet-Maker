@@ -54,7 +54,7 @@ async function request(path, body = {}) {
     headers: { 'Content-Type': 'application/json',
       ...(publicSite && pairingToken ? { Authorization: 'Bearer ' + pairingToken } : {}) },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(path === '/generate' ? 300000 : 20000),
+    signal: AbortSignal.timeout(path === '/generate' ? 300000 : path === '/claim' ? 2000 : 20000),
   }).catch(() => { throw new Error(bridgeHelp); });
   if (!response.headers.get('content-type')?.includes('application/json')) throw new Error(bridgeHelp);
   const result = await response.json();
@@ -75,11 +75,34 @@ async function pairIfNeeded() {
       pairingToken = '';
     }
   }
-  await request('/presence');
-  const code = window.prompt('공통 AI연결앱에 표시된 연결 코드를 입력하세요.');
-  if (!code?.trim()) throw new Error('연결 코드를 입력하면 계속할 수 있습니다.');
-  const result = await request('/pair', {code:code.trim().toLowerCase(), tabId});
-  pairingToken = result.token;
+  const secret = Array.from(crypto.getRandomValues(new Uint8Array(32)),
+    byte => byte.toString(16).padStart(2,'0')).join('');
+  const digest = await crypto.subtle.digest('SHA-256',new TextEncoder().encode(secret));
+  const challenge = Array.from(new Uint8Array(digest),
+    byte => byte.toString(16).padStart(2,'0')).join('');
+  const link = document.createElement('a');
+  link.href = 'nodecanvas://connect?' + new URLSearchParams({origin:location.origin,challenge});
+  link.textContent = 'AI연결앱 열기';
+  connectionStatus.replaceChildren(link);
+  await new Promise((resolve,reject) => {
+    const timeout = setTimeout(() => reject(new Error('연결 요청 시간이 지났습니다. 다시 시도해 주세요.')),120000);
+    link.addEventListener('click', () => {
+      clearTimeout(timeout);
+      setTimeout(resolve,0);
+    }, {once:true});
+  });
+  connectionStatus.textContent = 'AI연결앱에서 사이트 주소를 승인해 주세요.';
+  for (let attempt=0;attempt<40;attempt++) {
+    try {
+      const result = await request('/claim',{secret,tabId});
+      pairingToken = result.token;
+      break;
+    } catch (error) {
+      if (error.status && error.status !== 401 && error.status !== 404) throw error;
+      await new Promise(resolve=>setTimeout(resolve,750));
+    }
+  }
+  if (!pairingToken) throw new Error('AI연결앱을 열고 사이트를 승인했는지 확인하세요. v1.15.1 이상이 필요합니다.');
   renderGuide();
 }
 

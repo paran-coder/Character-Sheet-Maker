@@ -12,7 +12,9 @@ async function commonConnector() {
     });
     if (!response.ok) return false;
     const {version} = await response.json();
-    return /^\d+\.\d+\.\d+$/.test(version);
+    if (!/^\d+\.\d+\.\d+$/.test(version)) return false;
+    const [major, minor, patch] = version.split('.').map(Number);
+    return major > 1 || major === 1 && (minor > 15 || minor === 15 && patch >= 1);
   } catch {
     return false;
   }
@@ -41,9 +43,9 @@ async function detect({ask = false} = {}) {
   if (!(await oldPortResponds())) return;
 
   download.textContent = 'AI연결앱 업데이트';
-  if (!ask || sessionStorage.getItem('connector-update-v1.15.0')) return;
-  sessionStorage.setItem('connector-update-v1.15.0', 'shown');
-  if (window.confirm('기존 AI연결앱 포트가 응답했습니다. 공통 AI연결앱 v1.15.0 설치 파일을 받을까요? 내려받은 파일을 실행하면 업데이트할 수 있습니다.')) {
+  if (!ask || sessionStorage.getItem('connector-update-v1.15.1')) return;
+  sessionStorage.setItem('connector-update-v1.15.1', 'shown');
+  if (window.confirm('기존 AI연결앱 포트가 응답했습니다. 공통 AI연결앱 v1.15.1 설치 파일을 받을까요? 내려받은 파일을 실행하면 업데이트할 수 있습니다.')) {
     download.click();
     status.textContent = '트레이에서 기존 AI연결앱을 종료한 뒤 내려받은 설치 파일을 실행하세요.';
   }

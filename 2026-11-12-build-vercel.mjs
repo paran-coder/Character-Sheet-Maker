@@ -24,8 +24,8 @@ const assets = [
 
 await mkdir(new URL('./2026-11-12-upscale-model/', output), { recursive: true });
 await Promise.all(assets.map(asset => copyFile(new URL(asset, app), new URL(asset, output))));
-const installer = '2026-11-12-AIConnector-Setup-v1.15.0.exe';
-await copyFile(new URL('./2026-11-12-GitHub-Release-v1.15.0/' + installer, import.meta.url), new URL(installer, output));
+const installer = '2026-11-12-AIConnector-Setup-v1.15.1.exe';
+await copyFile(new URL('./2026-11-12-GitHub-Release-v1.15.1/' + installer, import.meta.url), new URL(installer, output));
 await copyFile(new URL('2026-11-12-connector-detection.mjs', import.meta.url), new URL('2026-11-12-connector-detection.mjs', output));
 const html = await readFile(new URL('2026-11-12-index.html', app), 'utf8');
 await writeFile(new URL('index.html', output), html
