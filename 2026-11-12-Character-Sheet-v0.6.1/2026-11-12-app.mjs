@@ -45,8 +45,32 @@ function update() {
 
 const publicSite = location.origin === 'https://charactersheetmaker.vercel.app';
 const bridgeHelp = '공통 AI연결앱을 실행한 뒤 ChatGPT 연결을 눌러 주세요.';
-const tabId = crypto.randomUUID();
+const pairingKey = 'character-sheet-maker:pairing';
 let pairingToken = '';
+let tabId = crypto.randomUUID();
+
+if (publicSite) {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(pairingKey) || 'null');
+    if (saved && /^[a-f0-9]{64}$/.test(saved.token) && /^[\w-]{1,80}$/.test(saved.tabId)) {
+      pairingToken = saved.token;
+      tabId = saved.tabId;
+    }
+  } catch {
+    // The current page can still connect when session storage is unavailable.
+  }
+}
+
+function rememberPairing(token) {
+  pairingToken = token;
+  if (!publicSite) return;
+  try {
+    if (token) sessionStorage.setItem(pairingKey, JSON.stringify({token, tabId}));
+    else sessionStorage.removeItem(pairingKey);
+  } catch {
+    // Keep the current page connected when session storage is unavailable.
+  }
+}
 
 async function request(path, body = {}) {
   const response = await fetch((publicSite ? 'http://127.0.0.1:43186/api' : '') + path, {
@@ -86,7 +110,7 @@ async function pairIfNeeded() {
     try { await request('/heartbeat', {tabId}); return; }
     catch (error) {
       if (error.status !== 401) throw error;
-      pairingToken = '';
+      rememberPairing('');
     }
   }
   if (!preparedActivation) throw new Error('연결을 준비하고 있습니다. 잠시 후 다시 눌러 주세요.');
@@ -100,7 +124,7 @@ async function pairIfNeeded() {
   for (let attempt=0;attempt<40;attempt++) {
     try {
       const result = await request('/claim',{secret,tabId});
-      pairingToken = result.token;
+      rememberPairing(result.token);
       break;
     } catch (error) {
       if (error.status && error.status !== 401 && error.status !== 404) throw error;
@@ -235,7 +259,20 @@ form.addEventListener('submit', async event => {
   }
 });
 
-if (!publicSite) refresh().catch(error => { connectionStatus.textContent = error.message; });
+async function restoreConnection() {
+  if (publicSite && !pairingToken) return;
+  try {
+    await refresh();
+    connectionStatus.textContent = '';
+  } catch (error) {
+    if (publicSite && error.status === 401) rememberPairing('');
+    connected = false;
+    update();
+    connectionStatus.textContent = error.status === 401
+      ? 'AI연결앱이 다시 시작됐습니다. ChatGPT 연결을 눌러 주세요.'
+      : error.message;
+  }
+}
 
 
 
@@ -380,4 +417,9 @@ resultDialog.addEventListener('click', event => {
     if (event.clientX < bounds.left || event.clientX > bounds.right ||
         event.clientY < bounds.top || event.clientY > bounds.bottom) resultDialog.close();
   }
+});
+
+void restoreConnection();
+window.addEventListener('pageshow', event => {
+  if (event.persisted) void restoreConnection();
 });
