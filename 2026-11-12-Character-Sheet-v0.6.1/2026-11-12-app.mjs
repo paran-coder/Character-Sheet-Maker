@@ -43,16 +43,43 @@ function update() {
 }
 
 const publicSite = location.origin === 'https://charactersheetmaker.vercel.app';
-const bridgeHelp = 'PC에서 AI연결앱을 설치하고 실행하세요. 브라우저가 로컬 네트워크 접근을 요청하면 허용해 주세요.';
+const bridgeHelp = '공통 AI연결앱을 실행한 뒤 ChatGPT 연결을 눌러 주세요.';
+const tabId = crypto.randomUUID();
+let pairingToken = '';
+
 async function request(path, body = {}) {
-  const response = await fetch((publicSite ? 'http://127.0.0.1:43186' : '') + path, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  const response = await fetch((publicSite ? 'http://127.0.0.1:43186/api' : '') + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+      ...(publicSite && pairingToken ? { Authorization: 'Bearer ' + pairingToken } : {}) },
+    body: JSON.stringify(body),
     signal: AbortSignal.timeout(path === '/generate' ? 300000 : 20000),
   }).catch(() => { throw new Error(bridgeHelp); });
   if (!response.headers.get('content-type')?.includes('application/json')) throw new Error(bridgeHelp);
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error);
-  return result;
+  if (!response.ok) {
+    const error = new Error(result.error || bridgeHelp);
+    error.status = response.status;
+    throw error;
+  }
+  return publicSite && path === '/status' ? {...result, connected:Boolean(result.account)} : result;
+}
+
+async function pairIfNeeded() {
+  if (!publicSite) return;
+  if (pairingToken) {
+    try { await request('/heartbeat', {tabId}); return; }
+    catch (error) {
+      if (error.status !== 401) throw error;
+      pairingToken = '';
+    }
+  }
+  await request('/presence');
+  const code = window.prompt('공통 AI연결앱에 표시된 연결 코드를 입력하세요.');
+  if (!code?.trim()) throw new Error('연결 코드를 입력하면 계속할 수 있습니다.');
+  const result = await request('/pair', {code:code.trim().toLowerCase(), tabId});
+  pairingToken = result.token;
+  renderGuide();
 }
 
 async function refresh() {
@@ -66,6 +93,10 @@ async function refresh() {
 login.addEventListener('click', async () => {
   login.disabled = true;
   try {
+    await pairIfNeeded();
+    const state = await refresh();
+    if (state.connected) { status.textContent = ''; return; }
+    login.disabled = true;
     const result = await request('/login');
     if (result.authUrl) {
       const url = new URL(result.authUrl);
@@ -174,7 +205,7 @@ form.addEventListener('submit', async event => {
   }
 });
 
-refresh().catch(error => { status.textContent = error.message; });
+if (!publicSite) refresh().catch(error => { status.textContent = error.message; });
 
 
 
@@ -210,6 +241,7 @@ async function renderGuide() {
     return;
   }
   try {
+    if (publicSite && !pairingToken) throw new Error('ChatGPT 연결에서 공통 AI연결앱과 페어링하면 가이드가 표시됩니다.');
     const result = await request('/layout', { views: ids, options: Object.fromEntries(new FormData(form)) });
     if (requestId !== guideRequest) return;
     const { width, height, panels } = result;

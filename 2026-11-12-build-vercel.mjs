@@ -24,10 +24,7 @@ const assets = [
 
 await mkdir(new URL('./2026-11-12-upscale-model/', output), { recursive: true });
 await Promise.all(assets.map(asset => copyFile(new URL(asset, app), new URL(asset, output))));
-await Promise.all(['2026-11-12-ai-connector-install.mjs','2026-11-12-ai-connector-update.json'].map(name =>
-  copyFile(new URL(name, import.meta.url), new URL(name, output))));
 const html = await readFile(new URL('2026-11-12-index.html', app), 'utf8');
 await writeFile(new URL('index.html', output), html
   .replace('<meta property="og:type"', '<meta property="og:url" content="' + site + '/">\n<meta property="og:type"')
-  .replace('<header>', '<script type="module" src="/2026-11-12-ai-connector-install.mjs"></script>\n<header>')
   .replaceAll('content="/og-image.png"', 'content="' + site + '/og-image.png"'));
