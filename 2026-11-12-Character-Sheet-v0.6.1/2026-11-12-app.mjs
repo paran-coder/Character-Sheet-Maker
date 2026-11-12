@@ -66,6 +66,20 @@ async function request(path, body = {}) {
   return publicSite && path === '/status' ? {...result, connected:Boolean(result.account)} : result;
 }
 
+let preparedActivation;
+
+async function prepareActivation() {
+  const secret = Array.from(crypto.getRandomValues(new Uint8Array(32)),
+    byte => byte.toString(16).padStart(2,'0')).join('');
+  const digest = await crypto.subtle.digest('SHA-256',new TextEncoder().encode(secret));
+  const challenge = Array.from(new Uint8Array(digest),
+    byte => byte.toString(16).padStart(2,'0')).join('');
+  const uri = 'nodecanvas://connect?' + new URLSearchParams({origin:location.origin,challenge});
+  preparedActivation = {secret, uri};
+}
+
+if (publicSite) void prepareActivation();
+
 async function pairIfNeeded() {
   if (!publicSite) return;
   if (pairingToken) {
@@ -75,22 +89,13 @@ async function pairIfNeeded() {
       pairingToken = '';
     }
   }
-  const secret = Array.from(crypto.getRandomValues(new Uint8Array(32)),
-    byte => byte.toString(16).padStart(2,'0')).join('');
-  const digest = await crypto.subtle.digest('SHA-256',new TextEncoder().encode(secret));
-  const challenge = Array.from(new Uint8Array(digest),
-    byte => byte.toString(16).padStart(2,'0')).join('');
+  if (!preparedActivation) throw new Error('연결을 준비하고 있습니다. 잠시 후 다시 눌러 주세요.');
+  const {secret, uri} = preparedActivation;
+  preparedActivation = null;
+  void prepareActivation();
   const link = document.createElement('a');
-  link.href = 'nodecanvas://connect?' + new URLSearchParams({origin:location.origin,challenge});
-  link.textContent = 'AI연결앱 열기';
-  connectionStatus.replaceChildren(link);
-  await new Promise((resolve,reject) => {
-    const timeout = setTimeout(() => reject(new Error('연결 요청 시간이 지났습니다. 다시 시도해 주세요.')),120000);
-    link.addEventListener('click', () => {
-      clearTimeout(timeout);
-      setTimeout(resolve,0);
-    }, {once:true});
-  });
+  link.href = uri;
+  link.click();
   connectionStatus.textContent = 'AI연결앱에서 사이트 주소를 승인해 주세요.';
   for (let attempt=0;attempt<40;attempt++) {
     try {
