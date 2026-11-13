@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Character Sheet Maker</title>
+<meta name="description" content="참조 이미지로 캐릭터 시트를 만들고 PNG로 저장하세요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Character Sheet Maker">
+<meta property="og:description" content="참조 이미지로 캐릭터 시트를 만들고 PNG로 저장하세요.">
+<meta property="og:image" content="/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Character Sheet Maker 표준 3뷰 가이드">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/og-image.png">
+<script defer src="/2026-11-12-analytics.js"></script>
+<link rel="stylesheet" href="/2026-11-12-style.css">
+<header class="studio-header"><h1>Character Sheet Maker</h1><div class="connection"><button id="login" type="button">ChatGPT 연결</button><p id="connection-status" role="status"></p></div></header>
+<main class="studio">
+  <form id="sheet">
+
+    <h2><label for="reference">캐릭터 이미지</label></h2>
+    <input id="reference" type="file" accept="image/png,image/jpeg,image/webp" required>
+    <img id="source" alt="참조 캐릭터" hidden>
+    <div class="view-heading"><h2>뷰 선택</h2><output id="selected-count"></output></div>
+    <div id="views"></div>
+    <div class="controls">
+      <label>프리셋<select id="preset"></select></label>
+      <label>의상 형태<select name="clothing"><option value="auto">자동</option><option value="pants">바지</option><option value="skirt">치마·로브</option></select></label>
+      <label>손<select name="hands"><option value="auto">자동</option><option value="bare">맨손</option><option value="gloves">장갑</option></select></label>
+      <label>발<select name="feet"><option value="auto">자동</option><option value="shoes">신발 착용</option><option value="bare">맨발</option></select></label>
+    </div>
+    <fieldset class="size-settings"><legend>가이드 크기</legend><div class="controls"><label>크기 설정<select name="mode"><option value="auto">자동</option><option value="manual">수동</option></select></label><label>패널 높이<select name="bodyHeight"><option>672</option><option>896</option><option selected>1120</option><option>1344</option><option>1792</option></select></label><label>가이드 너비<input name="width" type="number" min="32" max="8192" step="32" value="2208"></label><label>가이드 높이<input name="height" type="number" min="32" max="8192" step="32" value="1280"></label></div></fieldset>
+    <div class="tabs" role="tablist" aria-label="시트 설정">
+      <button type="button" role="tab" id="layout-tab" aria-controls="layout-panel" aria-selected="true">레이아웃</button>
+      <button type="button" role="tab" id="parts-tab" aria-controls="parts-panel" aria-selected="false" tabindex="-1">부위별 프롬프트</button>
+    </div>
+    <div id="layout-panel" role="tabpanel" aria-labelledby="layout-tab"><p id="guide-count"></p><div id="guide" aria-label="선택한 뷰 배치"></div></div>
+    <div id="parts-panel" role="tabpanel" aria-labelledby="parts-tab" hidden>
+      <label>얼굴<textarea name="face" maxlength="400" rows="2"></textarea></label>
+      <label>전신<textarea name="body" maxlength="400" rows="2"></textarea></label>
+      <label>의상<textarea name="outfit" maxlength="400" rows="2"></textarea></label>
+      <label>손<textarea name="handDetail" maxlength="400" rows="2"></textarea></label>
+      <label>발·신발<textarea name="footDetail" maxlength="400" rows="2"></textarea></label>
+    </div>
+
+
+    <div class="generate-action"><button form="sheet" type="submit" id="generate" disabled>시트 생성</button><p id="status" role="status"></p></div>
+  </form>
+  <section aria-labelledby="result-title">
+    <div class="result-toolbar"><h2 id="result-title">생성 결과</h2><button type="button" id="download" hidden>저장</button></div>
+    <div class="preview"><p id="empty">시트를 생성하면 미리볼 수 있습니다</p><button type="button" id="result-open" aria-label="생성된 캐릭터 시트 크게 보기" hidden><img id="result" alt="생성된 캐릭터 시트"></button></div>
+
+  </section>
+</main>
+<dialog id="result-dialog" aria-label="캐릭터 시트 크게 보기"><form method="dialog"><button autofocus>닫기</button></form><img id="result-large" alt="확대된 캐릭터 시트"></dialog>
+<script type="module" src="/2026-11-12-app.mjs"></script>
+</html>
+
+
+
+
+
+
+
+

@@ -15,10 +15,17 @@ let working = false;
 
 
 const artworkRects = [[0,75,470,560],[1010,35,140,205],null,null,null,null,[495,20,350,625],[904,20,350,625],[55,625,350,625],null,null,[415,755,445,400],[860,820,380,340]];
-for (const [row, entries] of cardRows.entries()) {
+const [faceCards, bodyCards] = cardRows;
+const displayRows = [faceCards.slice(0, -1), bodyCards.slice(0, -1), [faceCards.at(-1), bodyCards.at(-1)]];
+const displayGroups = ['얼굴', '전신·의상', '손·발'];
+const selectedViews = fields => {
+  const selected = fields.getAll('view').map(Number);
+  return cardRows.flat().filter(id => selected.includes(id));
+};
+for (const [row, entries] of displayRows.entries()) {
   const field = document.createElement('fieldset');
   const legend = document.createElement('legend');
-  legend.textContent = row === 0 ? '얼굴·손' : '전신·의상·발';
+  legend.textContent = displayGroups[row];
   field.append(legend);
   for (const id of entries) {
     const {label} = views[id];
@@ -233,7 +240,7 @@ async function pngUrl(data) {
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (generate.disabled) return;
-  const settings = new FormData(form); const views = settings.getAll('view').map(Number);
+  const settings = new FormData(form); const views = selectedViews(settings);
   working = true;
   update();
   status.textContent = '캐릭터 시트를 생성하고 있습니다…';
@@ -293,7 +300,7 @@ let guideRequest = 0;
 async function renderGuide() {
   const requestId = ++guideRequest;
   const fields = new FormData(form);
-  const ids = fields.getAll('view').map(Number);
+  const ids = selectedViews(fields);
   const guide = get('guide');
   const count = get('guide-count');
   get('selected-count').textContent = ids.length + ' / ' + viewIds.length + ' 선택';
