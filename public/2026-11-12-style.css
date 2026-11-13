@@ -171,3 +171,87 @@ input[type=file] { padding:12px; margin:8px 0; }
 .guide-content li { margin-block:20px; }
 .guide-content h3 { margin-bottom:4px; }
 .guide-content p { margin-top:0; }
+
+
+/* Character Sheet Maker workspace */
+.studio-header {
+  padding: 12px clamp(16px, 3vw, 48px);
+}
+.studio-header h1 { font-size: 1.125rem; }
+.studio-header .connection {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+.studio-header .connection a {
+  border-color: var(--border);
+  text-decoration: none;
+  font-size: .8125rem;
+}
+.studio-header #login { border-color: #a4aec8; }
+.studio-header #connection-status {
+  flex-basis: 100%;
+  max-width: none;
+  margin: 0;
+}
+.studio {
+  max-width: 1600px;
+  grid-template-columns: minmax(21rem, 25rem) minmax(0, 1fr);
+  padding: 20px clamp(16px, 3vw, 48px);
+}
+.studio > form, .studio > section { padding: 18px; }
+.studio #views { display: block; }
+.studio #views fieldset {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 8px;
+}
+.studio #views legend {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  font-size: .8125rem;
+  color: var(--muted);
+}
+.studio #views fieldset .view { grid-column: auto; margin: 0; }
+.studio .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.studio .generate-action {
+  position: static;
+  padding: 14px 0 0;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.studio #generate { background: #2345bc; border-color: #2345bc; }
+.studio #generate:enabled:hover { background: #18379f; }
+.studio .result-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+}
+.studio .result-toolbar h2, .studio #download { margin: 0; }
+.studio #download { border-color: var(--border); }
+.studio .preview {
+  margin-top: 12px;
+  min-height: clamp(18rem, 62vh, 42rem);
+  border: 1px solid var(--border);
+  background: #f4f6fa;
+}
+@media (min-width: 851px) {
+  .studio > section { position: sticky; top: 16px; }
+}
+@media (max-width: 850px) {
+  .studio { grid-template-columns: minmax(0, 1fr); max-width: 48rem; }
+  .studio .preview { min-height: 16rem; }
+}
+@media (max-width: 640px) {
+  .studio-header { flex-direction: column; align-items: flex-start; }
+  .studio-header .connection { justify-content: flex-start; text-align: left; }
+  .studio-header .connection a, .studio-header #login { padding-inline: 10px; }
+}
