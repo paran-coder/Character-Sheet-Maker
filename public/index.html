@@ -50,8 +50,9 @@
   </form>
   <section aria-labelledby="result-title">
     <div class="result-toolbar"><h2 id="result-title">생성 결과</h2><button type="button" id="download" hidden>저장</button></div>
-    <div class="preview"><p id="empty">시트를 생성하면 미리볼 수 있습니다</p><button type="button" id="result-open" aria-label="생성된 캐릭터 시트 크게 보기" hidden><img id="result" alt="생성된 캐릭터 시트"></button></div>
+    <div class="preview" id="result-preview" aria-busy="false"><p id="empty">시트를 생성하면 미리볼 수 있습니다</p><button type="button" id="result-open" aria-label="생성된 캐릭터 시트 크게 보기" hidden><img id="result" alt="생성된 캐릭터 시트"></button><div id="generation-overlay" hidden aria-hidden="true"><span class="generation-ring">시트 생성 중</span></div></div>
 
+    <p id="result-error" hidden></p>
   </section>
 </main>
 <dialog id="result-dialog" aria-label="캐릭터 시트 크게 보기"><form method="dialog"><button autofocus>닫기</button></form><img id="result-large" alt="확대된 캐릭터 시트"></dialog>

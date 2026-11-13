@@ -8,6 +8,9 @@ const login = get('login');
 const status = get('status');
 const connectionStatus = get('connection-status');
 const download = get('download');
+const resultPreview = get('result-preview');
+const generationOverlay = get('generation-overlay');
+const resultError = get('result-error');
 let sourceUrl;
 let resultUrl;
 let connected = false;
@@ -242,6 +245,10 @@ form.addEventListener('submit', async event => {
   if (generate.disabled) return;
   const settings = new FormData(form); const views = selectedViews(settings);
   working = true;
+  generate.textContent = '시트 생성 중…';
+  resultPreview.setAttribute('aria-busy', 'true');
+  generationOverlay.hidden = false;
+  resultError.hidden = true;
   update();
   status.textContent = '캐릭터 시트를 생성하고 있습니다…';
   try {
@@ -258,8 +265,13 @@ form.addEventListener('submit', async event => {
     status.textContent = '시트가 완성되었습니다.';
   } catch (error) {
     status.textContent = error.message;
+    resultError.textContent = status.textContent;
+    resultError.hidden = false;
   } finally {
     working = false;
+    generationOverlay.hidden = true;
+    resultPreview.setAttribute('aria-busy', 'false');
+    generate.textContent = '시트 생성';
     update();
   }
 });

@@ -1,6 +1,6 @@
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 
-const app = new URL('./2026-11-13-Character-Sheet-v0.6.3/', import.meta.url);
+const app = new URL('./2026-11-13-Character-Sheet-v0.6.4/', import.meta.url);
 const output = new URL('./public/', import.meta.url);
 const site = 'https://charactersheetmaker.vercel.app';
 const assets = [
